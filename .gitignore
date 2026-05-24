@@ -25,3 +25,13 @@ __pycache__/
 
 # Node
 node_modules/
+
+# AWS SAM
+.aws-sam/
+
+# Terraform override files
+override.tf
+override.tf.json
+
+# Ansible retry files
+*.retry
