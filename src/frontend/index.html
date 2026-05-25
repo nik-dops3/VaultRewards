@@ -1,0 +1,509 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>VaultRewards — Member Portal</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            background: #0f172a;
+            color: #e2e8f0;
+            min-height: 100vh;
+        }
+
+        /* ── Navigation ── */
+        nav {
+            background: #1e293b;
+            padding: 1rem 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid #334155;
+        }
+
+        .logo {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: #6366f1;
+            letter-spacing: -0.5px;
+        }
+
+        .nav-status {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 0.85rem;
+            color: #94a3b8;
+        }
+
+        .status-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: #22c55e;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.4; }
+        }
+
+        /* ── Main Layout ── */
+        .container {
+            max-width: 1100px;
+            margin: 2rem auto;
+            padding: 0 1.5rem;
+        }
+
+        /* ── Member Selector ── */
+        .member-selector {
+            background: #1e293b;
+            border: 1px solid #334155;
+            border-radius: 12px;
+            padding: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .member-selector h2 {
+            font-size: 0.85rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: #64748b;
+            margin-bottom: 1rem;
+        }
+
+        .member-buttons {
+            display: flex;
+            gap: 0.75rem;
+            flex-wrap: wrap;
+        }
+
+        .member-btn {
+            padding: 0.6rem 1.2rem;
+            border-radius: 8px;
+            border: 1px solid #334155;
+            background: #0f172a;
+            color: #94a3b8;
+            cursor: pointer;
+            font-size: 0.9rem;
+            transition: all 0.2s;
+        }
+
+        .member-btn:hover { border-color: #6366f1; color: #e2e8f0; }
+        .member-btn.active { background: #6366f1; border-color: #6366f1; color: white; }
+
+        /* ── Dashboard Grid ── */
+        .dashboard {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1.5rem;
+            margin-bottom: 1.5rem;
+        }
+
+        @media (max-width: 700px) { .dashboard { grid-template-columns: 1fr; } }
+
+        /* ── Cards ── */
+        .card {
+            background: #1e293b;
+            border: 1px solid #334155;
+            border-radius: 12px;
+            padding: 1.5rem;
+        }
+
+        .card-label {
+            font-size: 0.8rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: #64748b;
+            margin-bottom: 0.5rem;
+        }
+
+        .card-value {
+            font-size: 2rem;
+            font-weight: 700;
+            color: #e2e8f0;
+        }
+
+        .card-sub {
+            font-size: 0.85rem;
+            color: #64748b;
+            margin-top: 0.25rem;
+        }
+
+        /* ── Tier Badge ── */
+        .tier-badge {
+            display: inline-block;
+            padding: 0.3rem 0.8rem;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-top: 0.5rem;
+        }
+
+        .tier-Silver { background: #334155; color: #94a3b8; }
+        .tier-Gold   { background: #451a03; color: #fbbf24; }
+        .tier-Platinum { background: #1e1b4b; color: #a5b4fc; }
+
+        /* ── Virtual Card ── */
+        .virtual-card {
+            background: linear-gradient(135deg, #4f46e5, #7c3aed);
+            border-radius: 16px;
+            padding: 1.5rem;
+            grid-column: span 2;
+        }
+
+        @media (max-width: 700px) { .virtual-card { grid-column: span 1; } }
+
+        .vc-label {
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            opacity: 0.7;
+            margin-bottom: 1rem;
+        }
+
+        .vc-number {
+            font-size: 1.3rem;
+            font-weight: 600;
+            letter-spacing: 3px;
+            margin-bottom: 1.5rem;
+            font-family: 'Courier New', monospace;
+        }
+
+        .vc-footer {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-end;
+        }
+
+        .vc-name { font-size: 0.9rem; opacity: 0.8; }
+        .vc-network {
+            font-size: 1.1rem;
+            font-weight: 700;
+            opacity: 0.9;
+        }
+
+        /* ── Transaction Tester ── */
+        .transaction-panel {
+            background: #1e293b;
+            border: 1px solid #334155;
+            border-radius: 12px;
+            padding: 1.5rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .transaction-panel h3 {
+            font-size: 0.85rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: #64748b;
+            margin-bottom: 1rem;
+        }
+
+        .tx-row {
+            display: flex;
+            gap: 0.75rem;
+            align-items: center;
+        }
+
+        .tx-input {
+            flex: 1;
+            background: #0f172a;
+            border: 1px solid #334155;
+            border-radius: 8px;
+            padding: 0.7rem 1rem;
+            color: #e2e8f0;
+            font-size: 1rem;
+        }
+
+        .tx-input:focus {
+            outline: none;
+            border-color: #6366f1;
+        }
+
+        .tx-btn {
+            padding: 0.7rem 1.5rem;
+            background: #6366f1;
+            border: none;
+            border-radius: 8px;
+            color: white;
+            font-size: 0.95rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background 0.2s;
+            white-space: nowrap;
+        }
+
+        .tx-btn:hover { background: #4f46e5; }
+        .tx-btn:disabled { background: #334155; cursor: not-allowed; }
+
+        /* ── Result Message ── */
+        .result {
+            margin-top: 0.75rem;
+            padding: 0.75rem 1rem;
+            border-radius: 8px;
+            font-size: 0.9rem;
+            display: none;
+        }
+
+        .result.success { background: #052e16; color: #4ade80; border: 1px solid #166534; }
+        .result.error   { background: #2d0a0a; color: #f87171; border: 1px solid #7f1d1d; }
+
+        /* ── API Status ── */
+        .api-status {
+            background: #1e293b;
+            border: 1px solid #334155;
+            border-radius: 12px;
+            padding: 1rem 1.5rem;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            font-size: 0.85rem;
+        }
+
+        .api-ok  { color: #4ade80; }
+        .api-err { color: #f87171; }
+
+        /* ── Loading ── */
+        .loading { color: #64748b; font-style: italic; }
+    </style>
+</head>
+<body>
+
+<nav>
+    <div class="logo">⬡ VaultRewards</div>
+    <div class="nav-status">
+        <div class="status-dot"></div>
+        <span id="api-env">connecting...</span>
+    </div>
+</nav>
+
+<div class="container">
+
+    <!-- Member Selector -->
+    <div class="member-selector">
+        <h2>Select Member</h2>
+        <div class="member-buttons" id="member-buttons">
+            <span class="loading">Loading members...</span>
+        </div>
+    </div>
+
+    <!-- Dashboard Grid -->
+    <div class="dashboard" id="dashboard" style="display:none">
+
+        <!-- Virtual Card -->
+        <div class="virtual-card">
+            <div class="vc-label">VaultRewards Virtual Card</div>
+            <div class="vc-number" id="card-number">•••• •••• •••• ••••</div>
+            <div class="vc-footer">
+                <div>
+                    <div class="vc-name" id="card-name">—</div>
+                    <div class="vc-label" style="margin:0">Member since <span id="card-joined">—</span></div>
+                </div>
+                <div class="vc-network">VISA</div>
+            </div>
+        </div>
+
+        <!-- Points Balance -->
+        <div class="card">
+            <div class="card-label">Points Balance</div>
+            <div class="card-value" id="points-balance">—</div>
+            <div class="card-sub">
+                Multiplier: <span id="points-multiplier">—</span>x
+                &nbsp;|&nbsp;
+                Tier: <span id="member-tier-text">—</span>
+            </div>
+            <div id="tier-badge" class="tier-badge">—</div>
+        </div>
+
+        <!-- Monthly Fee -->
+        <div class="card">
+            <div class="card-label">Monthly Subscription</div>
+            <div class="card-value" id="monthly-fee">—</div>
+            <div class="card-sub">Billed monthly</div>
+        </div>
+
+    </div>
+
+    <!-- Transaction Tester -->
+    <div class="transaction-panel" id="tx-panel" style="display:none">
+        <h3>Simulate Card Transaction</h3>
+        <div class="tx-row">
+            <input
+                type="number"
+                class="tx-input"
+                id="tx-amount"
+                placeholder="Amount spent (£)"
+                min="1"
+                value="50"
+            />
+            <button class="tx-btn" id="tx-btn" onclick="simulateTransaction()">
+                Add Points
+            </button>
+        </div>
+        <div class="result" id="tx-result"></div>
+    </div>
+
+    <!-- API Status -->
+    <div class="api-status">
+        <span>API Status</span>
+        <span id="api-status-text" class="loading">checking...</span>
+    </div>
+
+</div>
+
+<script>
+    // ── Config ──────────────────────────────────────────────────────────────
+    // The API runs on port 5001 on your Mac (mapped from container port 5000)
+    const API = 'http://localhost:5001';
+    let currentMemberId = null;
+
+    // ── On Page Load ─────────────────────────────────────────────────────────
+    window.onload = async () => {
+        await checkApiHealth();
+        await loadMembers();
+    };
+
+    // ── Check API Health ─────────────────────────────────────────────────────
+    async function checkApiHealth() {
+        const el = document.getElementById('api-status-text');
+        const env = document.getElementById('api-env');
+        try {
+            const res = await fetch(`${API}/health`);
+            const data = await res.json();
+            el.textContent = `Healthy — v${data.version}`;
+            el.className = 'api-ok';
+            env.textContent = data.environment;
+        } catch {
+            el.textContent = 'Cannot reach API on port 5001';
+            el.className = 'api-err';
+            env.textContent = 'offline';
+        }
+    }
+
+    // ── Load All Members ─────────────────────────────────────────────────────
+    async function loadMembers() {
+        const container = document.getElementById('member-buttons');
+        try {
+            const res = await fetch(`${API}/members`);
+            const data = await res.json();
+            container.innerHTML = '';
+            data.members.forEach(m => {
+                const btn = document.createElement('button');
+                btn.className = 'member-btn';
+                btn.textContent = `${m.name} (${m.tier})`;
+                btn.onclick = () => selectMember(m.id, btn);
+                container.appendChild(btn);
+            });
+            // Auto-select first member
+            container.firstChild.click();
+        } catch {
+            container.innerHTML = '<span style="color:#f87171">Could not load members — is the API running?</span>';
+        }
+    }
+
+    // ── Select a Member ──────────────────────────────────────────────────────
+    async function selectMember(memberId, btn) {
+        // Update active button
+        document.querySelectorAll('.member-btn').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        currentMemberId = memberId;
+
+        try {
+            // Fetch member details and points in parallel
+            const [memberRes, pointsRes] = await Promise.all([
+                fetch(`${API}/members/${memberId}`),
+                fetch(`${API}/members/${memberId}/points`)
+            ]);
+            const member = await memberRes.json();
+            const points = await pointsRes.json();
+
+            // Update virtual card
+            document.getElementById('card-number').textContent = member.card_number;
+            document.getElementById('card-name').textContent = member.name.toUpperCase();
+            document.getElementById('card-joined').textContent = member.joined;
+
+            // Update points
+            document.getElementById('points-balance').textContent =
+                points.points_balance.toLocaleString();
+            document.getElementById('points-multiplier').textContent = points.multiplier;
+            document.getElementById('member-tier-text').textContent = member.tier;
+
+            // Update tier badge
+            const badge = document.getElementById('tier-badge');
+            badge.textContent = member.tier;
+            badge.className = `tier-badge tier-${member.tier}`;
+
+            // Update fee
+            const fee = member.monthly_fee === 0 ? 'Free' : `£${member.monthly_fee}/mo`;
+            document.getElementById('monthly-fee').textContent = fee;
+
+            // Show dashboard
+            document.getElementById('dashboard').style.display = 'grid';
+            document.getElementById('tx-panel').style.display = 'block';
+            document.getElementById('tx-result').style.display = 'none';
+
+        } catch (err) {
+            console.error(err);
+        }
+    }
+
+    // ── Simulate Transaction ─────────────────────────────────────────────────
+    async function simulateTransaction() {
+        if (!currentMemberId) return;
+
+        const amount = parseFloat(document.getElementById('tx-amount').value);
+        const btn = document.getElementById('tx-btn');
+        const result = document.getElementById('tx-result');
+
+        if (!amount || amount <= 0) {
+            result.textContent = 'Please enter a valid amount';
+            result.className = 'result error';
+            result.style.display = 'block';
+            return;
+        }
+
+        btn.disabled = true;
+        btn.textContent = 'Processing...';
+
+        try {
+            const res = await fetch(
+                `${API}/members/${currentMemberId}/points/add`,
+                {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ amount_spent: amount })
+                }
+            );
+            const data = await res.json();
+
+            // Update points display
+            document.getElementById('points-balance').textContent =
+                data.new_balance.toLocaleString();
+
+            // Show success
+            result.textContent =
+                `+${data.points_earned} points earned on £${amount} spend (${data.multiplier}x multiplier). New balance: ${data.new_balance.toLocaleString()}`;
+            result.className = 'result success';
+            result.style.display = 'block';
+
+        } catch {
+            result.textContent = 'Transaction failed — check the API is running';
+            result.className = 'result error';
+            result.style.display = 'block';
+        } finally {
+            btn.disabled = false;
+            btn.textContent = 'Add Points';
+        }
+    }
+</script>
+
+</body>
+</html>

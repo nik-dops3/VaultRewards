@@ -1,0 +1,68 @@
+
+# ─────────────────────────────────────────────
+# VaultRewards — Docker Compose
+# Runs the full platform locally for development
+# Usage: docker compose up
+# Stop:  docker compose down
+# ─────────────────────────────────────────────
+
+#version: '3.8'
+# version tells Docker Compose which syntax features are available
+# 3.8 is the modern stable version
+
+services:
+  # ── VaultRewards API ──────────────────────────────
+  api:
+    # which image to use for this service
+    # we built this with: docker build -t vaultrewards-api:v1.0 src/api/
+    image: vaultrewards-api:v1.0
+
+    # give the container a predictable name
+    container_name: vaultrewards-api
+
+    # port mapping — same as -p in docker run
+    # your Mac port 5001 → container port 5000
+    ports:
+      - "5001:5000"
+
+    # environment variables injected into the container
+    # these override the defaults in app.py
+    # in production these come from AWS Secrets Manager
+    # locally we set them here
+    environment:
+      - ENVIRONMENT=development
+      - DB_HOST=localhost
+      - DB_NAME=vaultrewards
+
+    # restart policy — what to do if the container crashes
+    # unless-stopped = restart automatically unless you manually stopped it
+    # other options: no, always, on-failure
+    restart: unless-stopped
+
+    # health check — Docker tests whether the container is healthy
+    # every 30s it curls /health
+    # if it fails 3 times in a row — container is marked unhealthy
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:5000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # ── VaultRewards Frontend ─────────────────────────
+  frontend:
+    image: vaultrewards-frontend:v1.0
+
+    container_name: vaultrewards-frontend
+
+    # port mapping for the frontend
+    # your Mac port 8080 → container port 80
+    # we use 8080 on Mac because port 80 requires root on Mac
+    ports:
+      - "8080:80"
+
+    # frontend depends on the API being up first
+    # Docker starts the api service before the frontend
+    depends_on:
+      - api
+
+    restart: unless-stopped
